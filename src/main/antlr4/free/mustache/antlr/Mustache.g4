@@ -7,19 +7,23 @@ template: (statement | variable | text)*;
 statement: (section | invertedSection | partial | comment) ;
 
 // Define a section, which is used for loops or conditionals
-section: sectionHeader (statement | variable | text)* '{{/' footer '}}';
+section: sectionBeg sectionContent* sectionEnd;
 
 // Define an inverted section, which is used for "if not" conditionals
-invertedSection: invertedSectionHeader (statement | variable | text)* '{{/' footer '}}';
+invertedSection: invertedSectionHeader sectionContent* sectionEnd;
 
 // Define a partial, which is a reference to another template
 partial: '{{' '>' IDENTIFIER '}}';
 
 // Define variables that are replaced with data
 variable: '{{' qualifiedName '}}';
-footer: (qualifiedName | first | last) ;
-sectionHeader: '{{' '#' footer '}}';
-invertedSectionHeader: '{{' '^' footer '}}';
+sectionVar: (qualifiedName | first | last) ;
+//# means normal section, @ means take map as list
+sectionBeg: '{{' ('#' | '@') sectionVar '}}';
+sectionContent : statement | variable | text;
+// '%' means section is recursive, '/' means section is end
+sectionEnd : '{{' ('/'|'%') sectionVar '}}';
+invertedSectionHeader: '{{' '^' sectionVar '}}';
 
 // Define 'first' and 'last' as special variables
 first: '-first';
