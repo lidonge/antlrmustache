@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.example</groupId>
+    <groupId>free</groupId>
     <artifactId>antlrmustache</artifactId>
     <version>1.0-SNAPSHOT</version>
 
@@ -13,5 +13,32 @@
         <maven.compiler.target>18</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.antlr</groupId>
+                <artifactId>antlr4-maven-plugin</artifactId>
+                <version>4.3</version>
+                <configuration>
+                    <arguments>
+                        <argument>-package</argument>
+                        <argument>free.mustache.antlr</argument>
+                    </arguments>
+                    <outputDirectory>
+                        ${basedir}/target/main/java/antlr4
+                    </outputDirectory>
+                    <libDirectory>${basedir}/src/main/antlr4/free/mustache/antlr</libDirectory>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>antlr</id>
+                        <goals>
+                            <goal>antlr4</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>
