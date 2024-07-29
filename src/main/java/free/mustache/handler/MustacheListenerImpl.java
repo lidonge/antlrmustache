@@ -84,12 +84,12 @@ public class MustacheListenerImpl extends MustacheBaseListener {
     public void enterInvertedSection(MustacheParser.InvertedSectionContext ctx) {
         Template tpl = (Template) stacks.peek();
         InvertedSection invertedSection = new InvertedSection();
-        tpl.addBlock(invertedSection);
-        stacks.push(invertedSection);
+        _addSection(tpl,invertedSection);
     }
 
     @Override
     public void exitInvertedSection(MustacheParser.InvertedSectionContext ctx) {
+        Template sub = (Template) stacks.pop();
         InvertedSection invertedSection = (InvertedSection) stacks.pop();
     }
 
@@ -97,6 +97,10 @@ public class MustacheListenerImpl extends MustacheBaseListener {
     public void enterSection(MustacheParser.SectionContext ctx) {
         Template tpl = (Template) stacks.peek();
         Section section = new Section();
+        _addSection(tpl, section);
+    }
+
+    private void _addSection(Template tpl, BaseSection section) {
         tpl.addBlock(section);
         stacks.push(section);
         Template sub = new Template();

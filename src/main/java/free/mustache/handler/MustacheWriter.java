@@ -96,14 +96,29 @@ public class MustacheWriter {
                     parents.remove(currentObj);
                 }
             }else{//first and last
-                if(sectionType == BaseSection.SectionType.Last &&
-                        (currentSectionType == BaseSection.SectionType.Last ||
-                                currentSectionType == BaseSection.SectionType.FirstAndLast)){
-                    write(sb, parents, currentObj, sub, BaseSection.SectionType.Normal);
-                }else if(sectionType == BaseSection.SectionType.First &&
-                        (currentSectionType == BaseSection.SectionType.First ||
-                                currentSectionType == BaseSection.SectionType.FirstAndLast)){
-                    write(sb, parents, currentObj, sub, BaseSection.SectionType.Normal);
+                boolean bInverted = block instanceof InvertedSection;
+                boolean bSecTypeIsLast = sectionType == BaseSection.SectionType.Last;
+                boolean bCurTypeIsLast = currentSectionType == BaseSection.SectionType.Last ||
+                        currentSectionType == BaseSection.SectionType.FirstAndLast;
+                boolean bSecTypeIsFirst = sectionType == BaseSection.SectionType.First;
+                boolean bCurTypeIsFirst = currentSectionType == BaseSection.SectionType.First ||
+                        currentSectionType == BaseSection.SectionType.FirstAndLast;
+                if(!bInverted) {
+                    if (bSecTypeIsLast && bCurTypeIsLast) {
+                        write(sb, parents, currentObj, sub, BaseSection.SectionType.Normal);
+                    } else {
+                        if (bSecTypeIsFirst && bCurTypeIsFirst) {
+                            write(sb, parents, currentObj, sub, BaseSection.SectionType.Normal);
+                        }
+                    }
+                }else{
+                    if (bSecTypeIsLast && !bCurTypeIsLast) {
+                        write(sb, parents, currentObj, sub, BaseSection.SectionType.Normal);
+                    } else {
+                        if (bSecTypeIsFirst && !bCurTypeIsFirst) {
+                            write(sb, parents, currentObj, sub, BaseSection.SectionType.Normal);
+                        }
+                    }
                 }
             }
         }else if(block instanceof Partial){
@@ -115,12 +130,7 @@ public class MustacheWriter {
     }
 
     private Object getQualifiedOrSimpleValue(List<Object> parents, Object currentObj, String varName) {
-        Object value;
-        if (varName.indexOf('.') != -1) {
-            value = getQualifiedValue(currentObj, varName);
-        } else
-            value = getVarValue(parents, currentObj, varName);
-        return value;
+        return getVarValue(parents, currentObj, varName);
     }
 
     private Object getVarValue(List<Object> parents, Object currentObj, String varName) {
@@ -137,7 +147,9 @@ public class MustacheWriter {
     }
     private Object getVarValue(Object currentObj, String varName) {
         Object ret = null;
-        if (currentObj instanceof Map) {
+        if (varName.indexOf('.') != -1) {
+            ret = getQualifiedValue(currentObj, varName);
+        } else if (currentObj instanceof Map) {
             ret = ((Map<?, ?>) currentObj).get(varName);
         } else {
             try {
