@@ -13,7 +13,7 @@ section: sectionBeg sectionContent* sectionEnd;
 invertedSection: invertedSectionBeg sectionContent* sectionEnd;
 
 // Define a partial, which is a reference to another template
-partial: '{{' '>' IDENTIFIER '}}';
+partial: '{{' '>' qualifiedName '}}';
 
 // Define variables that are replaced with data
 variable: '{{' qualifiedName '}}';

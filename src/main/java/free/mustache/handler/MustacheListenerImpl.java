@@ -178,4 +178,15 @@ public class MustacheListenerImpl extends MustacheBaseListener {
 
     }
 
+    @Override
+    public void enterPartial(MustacheParser.PartialContext ctx) {
+        Template tpl = (Template) stacks.peek();
+        Partial variable = new Partial();
+        variable.setPartialName(skipWS((MustacheParser.QualifiedNameContext) ctx.getChild(2)));
+        tpl.addBlock(variable);
+    }
+
+    @Override
+    public void exitPartial(MustacheParser.PartialContext ctx) {
+    }
 }

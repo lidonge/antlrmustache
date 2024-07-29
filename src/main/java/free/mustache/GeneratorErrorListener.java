@@ -8,14 +8,15 @@ import org.antlr.v4.runtime.atn.ATNConfigSet;
 import org.antlr.v4.runtime.dfa.DFA;
 
 import java.io.File;
+import java.net.URI;
 import java.util.BitSet;
 
 /**
  * @author lidong@date 2023-11-01@version 1.0
  */
 public class GeneratorErrorListener implements ANTLRErrorListener, ILogable {
-    File file;
-    public GeneratorErrorListener(File file) {
+    URI file;
+    public GeneratorErrorListener(URI file) {
         this.file = file;
     }
 

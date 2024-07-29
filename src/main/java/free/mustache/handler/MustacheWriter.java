@@ -15,6 +15,17 @@ public class MustacheWriter {
     private boolean indentIfRecursive = true;
     private int indent = 0;
 
+    private IPartialFileHandler partialFileHandler;
+
+    public IPartialFileHandler getPartialFileHandler() {
+        return partialFileHandler;
+    }
+
+    public MustacheWriter setPartialFileHandler(IPartialFileHandler partialFileHandler) {
+        this.partialFileHandler = partialFileHandler;
+        return this;
+    }
+
     public boolean isIndentIfRecursive() {
         return indentIfRecursive;
     }
@@ -91,8 +102,9 @@ public class MustacheWriter {
                     write(sb, parents, currentObj, sub, BaseSection.SectionType.Normal);
                 }
             }
-        }else if(block instanceof Partial){//TODO
-
+        }else if(block instanceof Partial){
+            Template sub = partialFileHandler.compilePartialTemplate(((Partial) block).getPartialName());
+            write(sb, parents, currentObj, sub, BaseSection.SectionType.Normal);
         }
     }
 

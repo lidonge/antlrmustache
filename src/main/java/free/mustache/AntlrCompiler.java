@@ -11,14 +11,25 @@ import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URI;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 /**
  * @author lidong@date 2023-11-22@version 1.0
  */
 public abstract class AntlrCompiler {
-    File antlrFile;
+    private URI antlrUri;
+
+    public AntlrCompiler(URI antlrUri) {
+        this.antlrUri = antlrUri;
+    }
+
     public AntlrCompiler(File antlrFile) {
-        this.antlrFile = antlrFile;
+        this(antlrFile.toURI());
     }
 
     public abstract ParseTreeListener compile() throws IOException;
@@ -28,7 +39,7 @@ public abstract class AntlrCompiler {
     protected void parseFile(Parser parser, IAntlrParserExecutor executor, ParseTreeListener listener) {
         parser.getInterpreter().setPredictionMode(PredictionMode.SLL);
         parser.removeErrorListeners();
-        parser.addErrorListener(new GeneratorErrorListener(antlrFile));
+        parser.addErrorListener(new GeneratorErrorListener(antlrUri));
 
         ParseTree tree = null;
         try {
@@ -45,16 +56,55 @@ public abstract class AntlrCompiler {
     }
 
     protected CharStream getCharStream() throws IOException {
-        String sql = getString();
-        CharStream stream = new ANTLRInputStream(sql);
+        String str = getString();
+        CharStream stream = new ANTLRInputStream(str);
         return stream;
     }
 
     protected String getString() throws IOException {
-        FileInputStream reader = new FileInputStream(antlrFile);
+        InputStream reader = getInputStreamFromURI(antlrUri);
         byte[] bytes = reader.readAllBytes();
         reader.close();
-        String sql = new String(bytes);
-        return sql;
+        String str = new String(bytes);
+        return str;
+    }
+
+    public static InputStream getInputStreamFromURI(URI uri) throws IOException {
+        switch (uri.getScheme()) {
+            case "file":
+                // 处理文件 URI
+                return getInputStreamFromFile(uri);
+            case "http":
+            case "https":
+                // 处理 HTTP/HTTPS URI
+                return getInputStreamFromHttp(uri);
+            case "jar":
+                // 处理 JAR 文件中的资源 URI
+                return getInputStreamFromJar(uri);
+            default:
+                throw new IllegalArgumentException("Unsupported URI scheme: " + uri.getScheme());
+        }
+    }
+
+    private static InputStream getInputStreamFromFile(URI uri) throws IOException {
+        File file = new File(uri);
+        return Files.newInputStream(Paths.get(file.toURI()));
+    }
+
+    private static InputStream getInputStreamFromHttp(URI uri) throws IOException {
+        URL url = uri.toURL();
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        return connection.getInputStream();
+    }
+
+    private static InputStream getInputStreamFromJar(URI uri) throws IOException {
+        // JAR 文件资源 URI 示例: jar:file:/path/to/your/jarfile.jar!/path/in/jar/resource.txt
+        String path = uri.getPath().substring(uri.getPath().indexOf("!") + 1); // 获取 JAR 内部资源路径
+        // 使用 ClassLoader 获取资源
+        InputStream inputStream = AntlrCompiler.class.getResourceAsStream(path);
+        if (inputStream == null) {
+            throw new IOException("Resource not found: " + path);
+        }
+        return inputStream;
     }
 }
