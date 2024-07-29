@@ -7,6 +7,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
+import java.util.Stack;
 
 /**
  * @author lidong@date 2024-07-27@version 1.0
@@ -15,6 +16,7 @@ public class MustacheWriter {
     private boolean indentIfRecursive = true;
     private int indent = 0;
 
+    private Stack<Integer> sectionIndexs = new Stack<>();
     private IPartialFileHandler partialFileHandler;
 
     public IPartialFileHandler getPartialFileHandler() {
@@ -73,6 +75,7 @@ public class MustacheWriter {
                         }
                         int iLast = array.length - 1;
                         for(int i = 0;i<array.length;i++){
+                            sectionIndexs.push(i);
                             Object obj = array[i];
 
                             BaseSection.SectionType firstLast = i==0 ? BaseSection.SectionType.First :
@@ -85,6 +88,7 @@ public class MustacheWriter {
                                 dealBlock(sb,block,parents,obj, BaseSection.SectionType.Normal);
                                 indent--;
                             }
+                            sectionIndexs.pop();
                         }
                     }else {
                         write(sb, parents, sectionObj, sub, BaseSection.SectionType.Normal);
@@ -105,6 +109,8 @@ public class MustacheWriter {
         }else if(block instanceof Partial){
             Template sub = partialFileHandler.compilePartialTemplate(((Partial) block).getPartialName());
             write(sb, parents, currentObj, sub, BaseSection.SectionType.Normal);
+        }else if (block instanceof SectionIndex){
+            sb.append(sectionIndexs.peek());
         }
     }
 

@@ -189,4 +189,16 @@ public class MustacheListenerImpl extends MustacheBaseListener {
     @Override
     public void exitPartial(MustacheParser.PartialContext ctx) {
     }
+
+    @Override
+    public void enterSectionIndex(MustacheParser.SectionIndexContext ctx) {
+        Template tpl = (Template) stacks.peek();
+        SectionIndex index = new SectionIndex();
+        tpl.addBlock(index);
+    }
+
+    @Override
+    public void exitSectionIndex(MustacheParser.SectionIndexContext ctx) {
+
+    }
 }

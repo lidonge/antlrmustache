@@ -20,10 +20,11 @@ variable: '{{' qualifiedName '}}';
 sectionVar: (qualifiedName | first | last) ;
 //# means normal section, @ means take map as list
 sectionBeg: '{{' ('#' | '@') sectionVar '}}';
-sectionContent : statement | variable | text;
+sectionContent : statement | variable | text | sectionIndex;
 // '%' means section is recursive, '/' means section is end
 sectionEnd : '{{' ('/'|'%') sectionVar '}}';
 invertedSectionBeg: '{{' '^' sectionVar '}}';
+sectionIndex : '{{' '-index' '}}';
 
 // Define 'first' and 'last' as special variables
 first: '-first';
