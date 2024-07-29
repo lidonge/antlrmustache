@@ -10,7 +10,7 @@ statement: (section | invertedSection | partial | comment) ;
 section: sectionBeg sectionContent* sectionEnd;
 
 // Define an inverted section, which is used for "if not" conditionals
-invertedSection: invertedSectionHeader sectionContent* sectionEnd;
+invertedSection: invertedSectionBeg sectionContent* sectionEnd;
 
 // Define a partial, which is a reference to another template
 partial: '{{' '>' IDENTIFIER '}}';
@@ -23,7 +23,7 @@ sectionBeg: '{{' ('#' | '@') sectionVar '}}';
 sectionContent : statement | variable | text;
 // '%' means section is recursive, '/' means section is end
 sectionEnd : '{{' ('/'|'%') sectionVar '}}';
-invertedSectionHeader: '{{' '^' sectionVar '}}';
+invertedSectionBeg: '{{' '^' sectionVar '}}';
 
 // Define 'first' and 'last' as special variables
 first: '-first';
@@ -33,15 +33,14 @@ last: '-last';
 comment: '{{!' .*? '}}';
 
 // Define plain text that is not a Mustache tag
-text: (~('{{' | '}}') | WS)+;
+text: (~('{{' | '}}') | ANY)+;
 qualifiedName
-    : IDENTIFIER ('.' IDENTIFIER)*
+    : (WS* IDENTIFIER WS*) ('.' (WS* IDENTIFIER WS*))*
     ;
 // Define an identifier for variable names
 IDENTIFIER: [a-zA-Z_][a-zA-Z0-9_]*;
-
 // Define whitespace and newlines
-WS: [ \t\r\n]+ -> skip;
+WS: [ \t\r\n]+;
 
 // Define any other characters to be handled as text
 ANY: .;
