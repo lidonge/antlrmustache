@@ -205,4 +205,17 @@ public class MustacheListenerImpl extends MustacheBaseListener {
     public void exitSectionIndex(MustacheParser.SectionIndexContext ctx) {
 
     }
+
+    @Override
+    public void enterSectionRecursive(MustacheParser.SectionRecursiveContext ctx) {
+        Template tpl = (Template) stacks.peek();
+        Recursive variable = new Recursive();
+        variable.setRecursiveName(skipWS((MustacheParser.QualifiedNameContext) ctx.getChild(2)));
+        tpl.addBlock(variable);
+    }
+
+    @Override
+    public void exitSectionRecursive(MustacheParser.SectionRecursiveContext ctx) {
+
+    }
 }
