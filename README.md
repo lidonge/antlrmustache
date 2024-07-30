@@ -14,6 +14,32 @@ A Java implementation tool that uses ANTLR to parse and generate Mustache templa
 3. **Recursive section support**: Our tool supports recursive Mustache sections, allowing you to easily handle complex data structures.
 4. **Map-to-List conversion**: We provide a special feature that allows Map objects to be treated as List objects in Mustache templates. This is achieved by using the `{{@sectionName}}` syntax, where `sectionName` returns a Map object.
 
+## Basic Usage:
+
+To get started with Mustache-Java-Tool, follow these steps:
+
+1. Create an instance of `MustacheCompiler` and pass your Mustache template file to it.
+2. Call the `compile()` method on the compiler instance to generate Java code from the Mustache template.
+3. Use the generated Java code to write output to a StringBuffer.
+
+Here's an example:
+```java
+// Create MustacheCompiler instance
+MustacheCompiler mustacheCompiler = new MustacheCompiler(mustacheFile);
+
+// Compile Mustache template
+MustacheListenerImpl impl = mustacheCompiler.compile();
+
+// Create StringBuffer for output
+StringBuffer sb = new StringBuffer();
+
+// Write output to StringBuffer
+writer.write(sb, new ArrayList<>(), root, impl.getTemplate(), BaseSection.SectionType.Normal);
+
+// Print output
+System.out.println(sb);
+```
+
 ## Recursive Example:
 
 Suppose we have a complex data structure represented by the following Java class:
