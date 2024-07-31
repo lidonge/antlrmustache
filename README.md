@@ -19,7 +19,7 @@ A Java implementation tool that uses ANTLR to parse and generate Mustache templa
 
 - **Arithmetic Operations**: Supports addition, subtraction, multiplication, and division.
 - **Logical Expressions**: Handles logical operations like AND, OR, and NOT.
-- **Conditional Expressions**: Allows conditional expressions with `if` and `else` clauses.
+- **Conditional Expressions**: Allows conditional expressions with '?' clauses.
 - **Function Calls**: Supports simple function calls with arguments.
 - **Qualified Names**: Handles variable names in the form of `qualifiedName`.
 - **Multiline Support**: Parses and evaluates multiple expressions separated by semicolons.
