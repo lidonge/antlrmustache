@@ -72,6 +72,7 @@
                         <argument>-package</argument>
                         <argument>free.mustache.antlr</argument>
                     </arguments>
+                    <visitor>true</visitor>
                     <outputDirectory>
                         ${basedir}/target/main/java/antlr4
                     </outputDirectory>

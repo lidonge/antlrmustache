@@ -218,4 +218,18 @@ public class MustacheListenerImpl extends MustacheBaseListener {
     public void exitSectionRecursive(MustacheParser.SectionRecursiveContext ctx) {
 
     }
+
+
+    @Override
+    public void enterMultiexpr(MustacheParser.MultiexprContext ctx) {
+        Template tpl = (Template) stacks.peek();
+        MultiExpr expr = new MultiExpr();
+        expr.setMultiExpr(ctx.getText());
+        tpl.addBlock(expr);
+    }
+
+    @Override
+    public void exitMultiexpr(MustacheParser.MultiexprContext ctx) {
+
+    }
 }

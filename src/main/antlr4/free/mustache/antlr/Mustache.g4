@@ -1,7 +1,7 @@
 grammar Mustache;
 
 // Define the starting point for parsing
-template: (statement | variable | text)*;
+template: (statement | variable | text | calculateValue)*;
 
 // Define statements enclosed in {{ }} or {{#...}}
 statement: (section | invertedSection | partial | comment) ;
@@ -20,13 +20,14 @@ variable: '{{' qualifiedName '}}';
 sectionVar: (qualifiedName | first | last) ;
 //# means normal section, @ means take map as list
 sectionBeg: '{{' ('#' | '@') sectionVar '}}';
-sectionContent : statement | variable | text | sectionIndex | sectionRecursive;
+sectionContent : statement | variable | text | sectionIndex | sectionRecursive | calculateValue;
 // '%' means section is recursive, '/' means section is end
 sectionEnd : '{{' ('/'|'%') sectionVar '}}';
 invertedSectionBeg: '{{' '^' sectionVar '}}';
 sectionIndex : '{{' '-index' '}}';
 sectionRecursive : '{{' '*' qualifiedName '}}';
-
+calculateValue : '{{' '%' multiexpr '}}';
+multiexpr : (~('{{' | '}}') | ANY)+;
 // Define 'first' and 'last' as special variables
 first: '-first';
 last: '-last';

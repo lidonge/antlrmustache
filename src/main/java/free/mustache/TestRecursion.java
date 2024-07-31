@@ -1,6 +1,7 @@
 package free.mustache;
 
 
+import free.mustache.handler.DefaultEnvironment;
 import free.mustache.handler.IPartialFileHandler;
 import free.mustache.handler.MustacheListenerImpl;
 import free.mustache.handler.MustacheWriter;
@@ -49,6 +50,13 @@ public class TestRecursion {
         root.add(new Component(4));
         System.out.println(root);
         MustacheWriter writer = new MustacheWriter();
+        writer.getExprEvaluator().setEnvironment(new DefaultEnvironment(){
+            @Override
+            public void addDefault() {
+                super.addDefault();
+                addFunction("str_replace", args -> ((String) args[0]).replace((String) args[1], (String)args[2]));
+            }
+        });
         writer.setPartialFileHandler(new IPartialFileHandler() {
             @Override
             public Template compilePartialTemplate(String partialName) {
