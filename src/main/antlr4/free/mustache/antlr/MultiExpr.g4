@@ -75,7 +75,7 @@ qualifiedName
 stringTerm : STRING;
 
 // Lexer
-NUMBER : [0-9]+ ('.' [0-9]+)?;
+NUMBER : [-]?[0-9]+ ('.' [0-9]+)?;
 STRING : '"' (~["\r\n])* '"';
 ID     : [a-zA-Z_] [a-zA-Z_0-9]*;
 PLUS   : '+';
