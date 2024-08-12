@@ -85,6 +85,7 @@ public class MustacheWriter {
         boolean exprSection = ((BaseSection) block).isExprSection() ? true : false;
         Object sectionObj = exprSection ? exprEvaluator.getVar(sectionName)
                 : ReflectTool.getQualifiedOrSimpleValue(parents, currentObj, sectionName);
+        sectionObj = "null".equals(sectionObj) ? null : sectionObj;
         if (block instanceof InvertedSection && sectionObj == null) {
             write(sb, parents, currentObj, sub, BaseSection.SectionType.Normal);
         } else if (block instanceof Section && sectionObj != null) {
