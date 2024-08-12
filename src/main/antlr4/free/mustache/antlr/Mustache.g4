@@ -17,7 +17,7 @@ partial: '{{' '>' qualifiedName '}}';
 
 // Define variables that are replaced with data
 variable: '{{' qualifiedName '}}';
-sectionVar: (qualifiedName | first | last) ;
+sectionVar: ('$' ? qualifiedName | first | last) ;
 //# means normal section, @ means take map as list
 sectionBeg: '{{' ('#' | '@') sectionVar '}}';
 sectionContent : statement | variable | text | sectionIndex | sectionRecursive | calculateValue;

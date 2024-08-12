@@ -82,7 +82,9 @@ public class MustacheWriter {
 
     private void writeNormalSection(StringBuffer sb, IMustacheBlock block, List<Object> parents, Object currentObj, Template sub) {
         String sectionName = ((BaseSection) block).getSectionName();
-        Object sectionObj = ReflectTool.getQualifiedOrSimpleValue(parents, currentObj, sectionName);
+        boolean exprSection = ((BaseSection) block).isExprSection() ? true : false;
+        Object sectionObj = exprSection ? exprEvaluator.getVar(sectionName)
+                : ReflectTool.getQualifiedOrSimpleValue(parents, currentObj, sectionName);
         if (block instanceof InvertedSection && sectionObj == null) {
             write(sb, parents, currentObj, sub, BaseSection.SectionType.Normal);
         } else if (block instanceof Section && sectionObj != null) {

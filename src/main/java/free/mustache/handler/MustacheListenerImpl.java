@@ -143,6 +143,10 @@ public class MustacheListenerImpl extends MustacheBaseListener {
         String name = section.getSectionName();
         String newName = null;
         ParseTree child = ctx.getChild(0);
+        if(child.getText().trim().equals("$")) {
+            section.setExprSection(true);
+            child = ctx.getChild(1);
+        }
         if(child instanceof MustacheParser.QualifiedNameContext) {
             newName = skipWS((MustacheParser.QualifiedNameContext) child);
         }else

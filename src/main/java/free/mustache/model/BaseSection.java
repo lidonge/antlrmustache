@@ -8,8 +8,17 @@ public class BaseSection implements IStatement{
         Normal, First,Last, FirstAndLast
     }
     private String sectionName;
+    private boolean exprSection = false;
     private Template subTemplate;
     private SectionType sectionType = SectionType.Normal;
+
+    public boolean isExprSection() {
+        return exprSection;
+    }
+
+    public void setExprSection(boolean exprSection) {
+        this.exprSection = exprSection;
+    }
 
     public String getSectionName() {
         return sectionName;
