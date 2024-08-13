@@ -115,7 +115,11 @@ public class ExprEvaluator extends MultiExprBaseVisitor<Object> {
     }
 
     private static String fineString(String s){
-        return s.substring(1,s.length()-1);
+        return s.substring(1,s.length()-1)
+                .replace("\\\"","\"")
+                .replace("\\n","\n")
+                .replace("\\r","\n")
+                .replace("\\t","\t");
     }
 
     @Override

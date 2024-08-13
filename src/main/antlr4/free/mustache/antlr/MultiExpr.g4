@@ -76,7 +76,13 @@ stringTerm : STRING;
 
 // Lexer
 NUMBER : [-]?[0-9]+ ('.' [0-9]+)?;
-STRING : '"' (~["\r\n])* '"';
+STRING
+    : '"' (ESC_SEQ | ~["\\\r\n])* '"'
+    ;
+
+fragment ESC_SEQ
+    : '\\' [btnfr"\\]  // 处理常见的转义序列，如 \b, \t, \n, \f, \r, \", \\, 等
+    ;
 ID     : [a-zA-Z_] [a-zA-Z_0-9]*;
 PLUS   : '+';
 MINUS  : '-';
