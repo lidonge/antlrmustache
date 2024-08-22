@@ -12,6 +12,7 @@ public interface IEvaluatorEnvironment {
     String STRING_SUB = "str_sub";
     String STRING_INDEX_OF = "str_indexOf";
     String OBJ_GET_VAR = "obj_getVar";
+    String OBJ_GET_CUR_VAR = "obj_getCurVar";
     String OBJ_PARENTS = "obj_parents";
     String OBJ_CURRENT_OBJ = "obj_currentObj";
 
@@ -22,6 +23,10 @@ public interface IEvaluatorEnvironment {
             List<Object> parents = (List<Object>) getVar(OBJ_PARENTS);
             Object currentObj = getVar(OBJ_CURRENT_OBJ);
             return ReflectTool.getQualifiedOrSimpleValue(parents, currentObj, (String) args[0]);
+        });
+        addFunction(OBJ_GET_CUR_VAR, args -> {
+            Object currentObj = getVar(OBJ_CURRENT_OBJ);
+            return ReflectTool.getQualifiedOrSimpleValue(null, currentObj, (String) args[0]);
         });
     }
 

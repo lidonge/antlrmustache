@@ -94,7 +94,7 @@ public class ExprEvaluator extends MultiExprBaseVisitor<Object> {
             if(ctx.atom().size() > 1){
                 throw new RuntimeException("MulExpr shoud not use non-number arg:" + arg0);
             }
-            ret = arg0 +"";
+            ret = arg0 == null ? "null" : arg0;
         }
         return ret;
     }

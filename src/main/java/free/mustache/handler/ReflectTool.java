@@ -16,7 +16,7 @@ public class ReflectTool {
 
     private static Object getVarValue(List<Object> parents, Object currentObj, String varName) {
         Object ret = null;
-        int count = parents.size() - 1;
+        int count = parents == null ? -1: parents.size() - 1;
         do {
             ret = getVarValue(currentObj, varName);
             if (count < 0)
