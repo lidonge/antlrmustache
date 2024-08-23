@@ -11,12 +11,15 @@ import org.antlr.v4.runtime.tree.*;
 
 import free.servpp.multiexpr.antlr.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 
 public class ExprEvaluator extends MultiExprBaseVisitor<Object> {
     private IEvaluatorEnvironment environment = new DefaultEnvironment();
+    private Map<String, ParseTree> parseTreeMap = new HashMap<>();
     public ExprEvaluator() {
     }
 
@@ -208,11 +211,15 @@ public class ExprEvaluator extends MultiExprBaseVisitor<Object> {
     }
 
     public Object evalFormula(String formula) {
-        MultiExprLexer lexer = new MultiExprLexer(new ANTLRInputStream(formula));
-        CommonTokenStream tokens = new CommonTokenStream(lexer);// 创建语法分析器
-        MultiExprParser parser = new MultiExprParser(tokens);
+        ParseTree tree = parseTreeMap.get(formula);
+        if(tree == null) {
+            MultiExprLexer lexer = new MultiExprLexer(new ANTLRInputStream(formula));
+            CommonTokenStream tokens = new CommonTokenStream(lexer);
+            MultiExprParser parser = new MultiExprParser(tokens);
 
-        ParseTree tree = parser.multiexpr();
+            tree = parser.multiexpr();
+            parseTreeMap.put(formula,tree);
+        }
         return visit(tree);
     }
 

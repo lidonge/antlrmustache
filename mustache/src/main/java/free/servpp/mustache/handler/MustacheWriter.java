@@ -2,6 +2,7 @@ package free.servpp.mustache.handler;
 
 import free.servpp.multiexpr.IEvaluatorEnvironment;
 import free.servpp.multiexpr.ReflectTool;
+import free.servpp.multiexpr.handler.DefaultEnvironment;
 import free.servpp.multiexpr.handler.ExprEvaluator;
 import free.servpp.mustache.model.*;
 
@@ -38,9 +39,28 @@ public class MustacheWriter {
 
     //The current object in context
     private Object currentObj;
+    private Stack<StringBuffer> outTextStack = new Stack<>();
 
+    public class MustacheEnvironment extends DefaultEnvironment{
+        @Override
+        public void addDefault() {
+            super.addDefault();
+            addFunction("must_saveBuff", args -> {
+                StringBuffer sb = outText;
+                outTextStack.push(outText);
+                outText = new StringBuffer();
+                return sb;
+            });
+            addFunction("must_popBuff", args -> {
+                StringBuffer sb = outText;
+                outText = outTextStack.pop();
+                return sb;
+            });
+        }
+    }
     public MustacheWriter(Object currentObj) {
         this.currentObj = currentObj;
+        exprEvaluator.setEnvironment(new MustacheEnvironment());
     }
 
     // Getter for the expression evaluator
