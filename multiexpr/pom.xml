@@ -58,7 +58,7 @@
                 <configuration>
                     <arguments>
                         <argument>-package</argument>
-                        <argument>free.multiexpr.antlr</argument>
+                        <argument>free.servpp.multiexpr.antlr</argument>
                     </arguments>
                     <visitor>true</visitor>
                     <outputDirectory>
