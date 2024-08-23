@@ -48,7 +48,7 @@ public class TestRecursion {
         root.add(new Component(2).add(new Component(3).add(new Component(6))).add(new Component(5)));
         root.add(new Component(4));
         System.out.println(root);
-        MustacheWriter writer = new MustacheWriter();
+        MustacheWriter writer = new MustacheWriter(root);
         writer.getExprEvaluator().setEnvironment(new DefaultEnvironment(){
             @Override
             public void addDefault() {
@@ -72,8 +72,8 @@ public class TestRecursion {
                 }
             }
         });
-        StringBuffer sb = new StringBuffer();
-        writer.write(sb, new ArrayList<>(),root, impl.getTemplate(), BaseSection.SectionType.Normal);
+        writer.write(impl.getTemplate(), BaseSection.SectionType.Normal);
+        StringBuffer sb = writer.getOutText();
         System.out.println(sb);
     }
 }

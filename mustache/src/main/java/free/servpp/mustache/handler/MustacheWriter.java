@@ -5,10 +5,7 @@ import free.servpp.multiexpr.ReflectTool;
 import free.servpp.multiexpr.handler.ExprEvaluator;
 import free.servpp.mustache.model.*;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Stack;
+import java.util.*;
 
 /**
  * Handles the rendering of Mustache templates.
@@ -34,6 +31,17 @@ public class MustacheWriter {
 
     // Evaluator to handle expressions in the template
     private ExprEvaluator exprEvaluator = new ExprEvaluator();
+    //The StringBuffer to store the rendered output
+    private StringBuffer outText = new StringBuffer();
+    //List of parent objects used in template evaluation
+    private List<Object> parents = new ArrayList<>();
+
+    //The current object in context
+    private Object currentObj;
+
+    public MustacheWriter(Object currentObj) {
+        this.currentObj = currentObj;
+    }
 
     // Getter for the expression evaluator
     public ExprEvaluator getExprEvaluator() {
@@ -62,18 +70,19 @@ public class MustacheWriter {
         return this;
     }
 
+    public StringBuffer getOutText() {
+        return outText;
+    }
+
     /**
      * Renders the template by processing each block in it.
      *
-     * @param sb          The StringBuffer to store the rendered output
-     * @param parents     List of parent objects used in template evaluation
-     * @param currentObj  The current object in context
      * @param template    The Mustache template to be rendered
      * @param sectionType The type of section being processed (Normal, First, Last, etc.)
      */
-    public void write(StringBuffer sb, List<Object> parents, Object currentObj, Template template, BaseSection.SectionType sectionType) {
+    public void write( Template template, BaseSection.SectionType sectionType) {
         for (IMustacheBlock block : template.getBlocks()) {
-            dealBlock(sb, block, parents, currentObj, sectionType);
+            dealBlock(block, sectionType);
         }
     }
 
@@ -81,31 +90,28 @@ public class MustacheWriter {
      * Processes an individual block in the template.
      * The block could be a text, variable, section, partial, etc.
      *
-     * @param sb                 The StringBuffer to store the rendered output
      * @param block              The block to process
-     * @param parents            List of parent objects used in template evaluation
-     * @param currentObj         The current object in context
      * @param currentSectionType The type of the current section being processed
      */
-    private void dealBlock(StringBuffer sb, IMustacheBlock block, List<Object> parents, Object currentObj, BaseSection.SectionType currentSectionType) {
+    private void dealBlock(IMustacheBlock block, BaseSection.SectionType currentSectionType) {
         if (block instanceof Text) {
-            writeText(sb, (Text) block);
+            writeText((Text) block);
         } else if (block instanceof Variable) {
-            writeVariable(sb, (Variable) block, parents, currentObj);
+            writeVariable((Variable) block, currentObj);
         } else if (block instanceof BaseSection) {
             BaseSection.SectionType sectionType = ((BaseSection) block).getSectionType();
             Template sub = ((BaseSection) block).getSubTemplate();
             if (sectionType == BaseSection.SectionType.Normal) {
-                writeNormalSection(sb, block, parents, currentObj, sub);
+                writeNormalSection( block, sub);
             } else {
                 // Handle first and last sections separately
-                writeFirstLast(sb, block, parents, currentObj, currentSectionType, sectionType, sub);
+                writeFirstLast(block, currentSectionType, sectionType, sub);
             }
         } else if (block instanceof Partial) {
             Template sub = partialFileHandler.compilePartialTemplate(((Partial) block).getPartialName());
-            write(sb, parents, currentObj, sub, BaseSection.SectionType.Normal);
+            write( sub, BaseSection.SectionType.Normal);
         } else if (block instanceof SectionIndex) {
-            sb.append(sectionIndexs.peek());
+            outText.append(sectionIndexs.peek());
         } else if (block instanceof Recursive) {
             popAndExecute(((Recursive) block).getRecursiveName());
         } else if (block instanceof MultiExpr) {
@@ -114,27 +120,24 @@ public class MustacheWriter {
             exprEvaluator.setVar(IEvaluatorEnvironment.OBJ_CURRENT_OBJ, currentObj);
             exprEvaluator.setVar(IEvaluatorEnvironment.OBJ_PARENTS, parents);
             Object obj = exprEvaluator.evalFormula(formula);
-            sb.append(obj);
+            outText.append(obj);
         }
     }
 
     /**
      * Processes a normal section block in the template.
      *
-     * @param sb         The StringBuffer to store the rendered output
      * @param block      The block to process
-     * @param parents    List of parent objects used in template evaluation
-     * @param currentObj The current object in context
      * @param sub        The sub-template associated with this section
      */
-    private void writeNormalSection(StringBuffer sb, IMustacheBlock block, List<Object> parents, Object currentObj, Template sub) {
+    private void writeNormalSection( IMustacheBlock block, Template sub) {
         String sectionName = ((BaseSection) block).getSectionName();
         boolean exprSection = ((BaseSection) block).isExprSection();
         Object sectionObj = exprSection ? exprEvaluator.getVar(sectionName)
-                : ReflectTool.getQualifiedOrSimpleValue(parents, currentObj, sectionName);
+                : ReflectTool.getQualifiedOrSimpleValue(parents,currentObj, sectionName);
         sectionObj = "null".equals(sectionObj) ? null : sectionObj;
         if (block instanceof InvertedSection && sectionObj == null) {
-            write(sb, parents, currentObj, sub, BaseSection.SectionType.Normal);
+            write(sub, BaseSection.SectionType.Normal);
         } else if (block instanceof Section && sectionObj != null) {
             Object[] array = null;
             array = getArray((Section) block, sectionObj, array);
@@ -145,32 +148,36 @@ public class MustacheWriter {
             {
                 parents.add(currentObj);
                 if (array != null && array.length != 0) {
-                    writeRecordArray(sb, block, parents, array, sectionName, sub);
+                    writeRecordArray(block, array, sectionName, sub);
                 } else {
-                    write(sb, parents, sectionObj, sub, BaseSection.SectionType.Normal);
+                    execWithNewCurrentObject(sectionObj,()->write( sub, BaseSection.SectionType.Normal));
                 }
                 parents.remove(currentObj);
             }
         }
     }
 
+    private void execWithNewCurrentObject(Object newCurObj, Runnable runnable){
+        Object oldObj = currentObj;
+        currentObj = newCurObj;
+        runnable.run();
+        currentObj = oldObj;
+    }
     /**
      * Processes an array of records within a section and renders them.
      *
-     * @param sb          The StringBuffer to store the rendered output
      * @param block       The block to process
-     * @param parents     List of parent objects used in template evaluation
      * @param array       The array of objects to be processed in the section
      * @param sectionName The name of the section being processed
      * @param sub         The sub-template associated with this section
      */
-    private void writeRecordArray(StringBuffer sb, IMustacheBlock block, List<Object> parents, Object[] array, String sectionName, Template sub) {
+    private void writeRecordArray( IMustacheBlock block, Object[] array, String sectionName, Template sub) {
         int iLast = array.length - 1;
         for (int i = 0; i < array.length; i++) {
             sectionIndexs.push(i);
             Object obj = array[i];
 
-            writeRecordOfSection(sb, block, parents, i, iLast, obj, sectionName, sub);
+            writeRecordOfSection(block, i, iLast, obj, sectionName, sub);
         }
     }
 
@@ -198,16 +205,14 @@ public class MustacheWriter {
     /**
      * Processes and renders an individual record within a section.
      *
-     * @param sb          The StringBuffer to store the rendered output
      * @param block       The block to process
-     * @param parents     List of parent objects used in template evaluation
      * @param i           The index of the current record in the array
      * @param iLast       The index of the last record in the array
      * @param obj         The current object being processed
      * @param sectionName The name of the section being processed
      * @param sub         The sub-template associated with this section
      */
-    private void writeRecordOfSection(StringBuffer sb, IMustacheBlock block, List<Object> parents, int i, int iLast, Object obj, String sectionName, Template sub) {
+    private void writeRecordOfSection(IMustacheBlock block, int i, int iLast, Object obj, String sectionName, Template sub) {
         BaseSection.SectionType firstLast = i == 0 ? BaseSection.SectionType.First :
                 (i == iLast ? BaseSection.SectionType.Last : BaseSection.SectionType.Normal);
         if (firstLast == BaseSection.SectionType.First && i == iLast)
@@ -218,13 +223,14 @@ public class MustacheWriter {
                 Object subSectionObj = ReflectTool.getQualifiedValue(obj, sectionName);
                 if (subSectionObj != null) {
                     indent++;
-                    dealBlock(sb, block, parents, obj, BaseSection.SectionType.Normal);
+                    execWithNewCurrentObject(obj,()->dealBlock(block, BaseSection.SectionType.Normal));
                     indent--;
                 }
             }
         };
         pushExecutor(sectionName, executor);
-        write(sb, parents, obj, sub, firstLast);
+        final BaseSection.SectionType theFirstLast = firstLast;
+        execWithNewCurrentObject(obj,()->write(sub, theFirstLast));
 
         if (((Section) block).isRecursive()) {
             popAndExecute(sectionName);
@@ -237,15 +243,12 @@ public class MustacheWriter {
     /**
      * Processes first and last sections within the template.
      *
-     * @param sb                 The StringBuffer to store the rendered output
      * @param block              The block to process
-     * @param parents            List of parent objects used in template evaluation
-     * @param currentObj         The current object in context
      * @param currentSectionType The type of the current section being processed
      * @param sectionType        The type of the section being processed (First, Last, etc.)
      * @param sub                The sub-template associated with this section
      */
-    private void writeFirstLast(StringBuffer sb, IMustacheBlock block, List<Object> parents, Object currentObj, BaseSection.SectionType currentSectionType, BaseSection.SectionType sectionType, Template sub) {
+    private void writeFirstLast(IMustacheBlock block, BaseSection.SectionType currentSectionType, BaseSection.SectionType sectionType, Template sub) {
         boolean bInverted = block instanceof InvertedSection;
         boolean bSecTypeIsLast = sectionType == BaseSection.SectionType.Last;
         boolean bCurTypeIsLast = currentSectionType == BaseSection.SectionType.Last ||
@@ -255,18 +258,18 @@ public class MustacheWriter {
                 currentSectionType == BaseSection.SectionType.FirstAndLast;
         if (!bInverted) {
             if (bSecTypeIsLast && bCurTypeIsLast) {
-                write(sb, parents, currentObj, sub, BaseSection.SectionType.Normal);
+                write(sub, BaseSection.SectionType.Normal);
             } else {
                 if (bSecTypeIsFirst && bCurTypeIsFirst) {
-                    write(sb, parents, currentObj, sub, BaseSection.SectionType.Normal);
+                    write(sub, BaseSection.SectionType.Normal);
                 }
             }
         } else {
             if (bSecTypeIsLast && !bCurTypeIsLast) {
-                write(sb, parents, currentObj, sub, BaseSection.SectionType.Normal);
+                write(sub, BaseSection.SectionType.Normal);
             } else {
                 if (bSecTypeIsFirst && !bCurTypeIsFirst) {
-                    write(sb, parents, currentObj, sub, BaseSection.SectionType.Normal);
+                    write(sub, BaseSection.SectionType.Normal);
                 }
             }
         }
@@ -275,30 +278,27 @@ public class MustacheWriter {
     /**
      * Appends text blocks to the output with optional indentation.
      *
-     * @param sb    The StringBuffer to store the rendered output
      * @param block The text block to process
      */
-    private void writeText(StringBuffer sb, Text block) {
+    private void writeText(Text block) {
         String text = block.getText();
         if (indentIfRecursive && indent > 0) {
-            sb.append(text.replace("\n", "\n" + "\t".repeat(indent)));
+            outText.append(text.replace("\n", "\n" + "\t".repeat(indent)));
         } else {
-            sb.append(text);
+            outText.append(text);
         }
     }
 
     /**
      * Processes and renders a variable block by evaluating its value.
      *
-     * @param sb         The StringBuffer to store the rendered output
      * @param block      The variable block to process
-     * @param parents    List of parent objects used in template evaluation
      * @param currentObj The current object in context
      */
-    private void writeVariable(StringBuffer sb, Variable block, List<Object> parents, Object currentObj) {
+    private void writeVariable(Variable block, Object currentObj) {
         String varName = block.getVarName();
         Object value = ReflectTool.getQualifiedOrSimpleValue(parents, currentObj, varName);
-        sb.append(value.toString());
+        outText.append(value.toString());
     }
 
     /**
