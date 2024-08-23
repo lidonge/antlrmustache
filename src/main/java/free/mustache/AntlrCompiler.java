@@ -98,12 +98,9 @@ public abstract class AntlrCompiler {
     }
 
     private static InputStream getInputStreamFromJar(URI uri) throws IOException {
-        // JAR 文件资源 URI 示例: jar:file:/path/to/your/jarfile.jar!/path/in/jar/resource.txt
-        String path = uri.getPath().substring(uri.getPath().indexOf("!") + 1); // 获取 JAR 内部资源路径
-        // 使用 ClassLoader 获取资源
-        InputStream inputStream = AntlrCompiler.class.getResourceAsStream(path);
+        InputStream inputStream = uri.toURL().openStream();
         if (inputStream == null) {
-            throw new IOException("Resource not found: " + path);
+            throw new IOException("Resource not found: " + uri);
         }
         return inputStream;
     }
