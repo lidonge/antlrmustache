@@ -105,3 +105,6 @@ LPAREN : '(';
 RPAREN : ')';
 SEMICOLON: ';';
 WS     : [ \t\r\n]+ -> skip;
+LINE_COMMENT
+    : '//' ~[\r\n]* '\r'? '\n' -> channel(HIDDEN)
+    ;

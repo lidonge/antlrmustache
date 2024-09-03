@@ -242,9 +242,17 @@ public class MustacheWriter {
             public void execute() {
                 Object subSectionObj = ReflectTool.getQualifiedValue(obj, sectionName);
                 if (subSectionObj != null) {
-                    indent++;
-                    execWithNewCurrentObject(obj,()->dealBlock(block, BaseSection.SectionType.Normal));
-                    indent--;
+                    int children = 0;
+                    if(subSectionObj instanceof List){
+                        children = ((List<?>) subSectionObj).size();
+                    }else if(subSectionObj instanceof Map){
+                        children = ((Map<?, ?>) subSectionObj).size();
+                    }
+                    if(children != 0) {
+                        indent++;
+                        execWithNewCurrentObject(obj, () -> dealBlock(block, BaseSection.SectionType.Normal));
+                        indent--;
+                    }
                 }
             }
         };
