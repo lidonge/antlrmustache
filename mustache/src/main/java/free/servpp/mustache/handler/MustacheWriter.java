@@ -40,6 +40,7 @@ public class MustacheWriter {
     //The current object in context
     private Object currentObj;
     private Stack<StringBuffer> outTextStack = new Stack<>();
+    private boolean lookUpParents = false;
 
     public class MustacheEnvironment extends DefaultEnvironment{
         @Override
@@ -59,7 +60,11 @@ public class MustacheWriter {
         }
     }
     public MustacheWriter(Object currentObj) {
+        this(currentObj,true);
+    }
+    public MustacheWriter(Object currentObj, boolean lookUpParents) {
         this.currentObj = currentObj;
+        this.lookUpParents = lookUpParents;
         exprEvaluator.setEnvironment(new MustacheEnvironment());
     }
 
@@ -144,6 +149,16 @@ public class MustacheWriter {
         }
     }
 
+    private Object getQualifiedOrSimpleValue(String sectionName){
+        Object ret = null;
+        if(lookUpParents){
+            ret = ReflectTool.getQualifiedOrSimpleValue(parents,currentObj, sectionName);
+        }else{
+            ret = ReflectTool.getQualifiedOrSimpleValue(null,currentObj, sectionName);
+        }
+        return ret;
+    }
+
     /**
      * Processes a normal section block in the template.
      *
@@ -154,7 +169,7 @@ public class MustacheWriter {
         String sectionName = ((BaseSection) block).getSectionName();
         boolean exprSection = ((BaseSection) block).isExprSection();
         Object sectionObj = exprSection ? exprEvaluator.getVar(sectionName)
-                : ReflectTool.getQualifiedOrSimpleValue(parents,currentObj, sectionName);
+                : getQualifiedOrSimpleValue(sectionName);
         sectionObj = "null".equals(sectionObj) ? null : sectionObj;
         if (block instanceof InvertedSection && sectionObj == null) {
             write(sub, BaseSection.SectionType.Normal);
@@ -170,7 +185,10 @@ public class MustacheWriter {
                 if (array != null && array.length != 0) {
                     writeRecordArray(block, array, sectionName, sub);
                 } else {
-                    execWithNewCurrentObject(sectionObj,()->write( sub, BaseSection.SectionType.Normal));
+//                    if(exprSection && array == null)
+//                        execWithNewCurrentObject(currentObj,()->write( sub, BaseSection.SectionType.Normal));
+//                    else
+                        execWithNewCurrentObject(sectionObj,()->write( sub, BaseSection.SectionType.Normal));
                 }
                 parents.remove(currentObj);
             }
@@ -325,7 +343,7 @@ public class MustacheWriter {
      */
     private void writeVariable(Variable block, Object currentObj) {
         String varName = block.getVarName();
-        Object value = ReflectTool.getQualifiedOrSimpleValue(parents, currentObj, varName);
+        Object value = getQualifiedOrSimpleValue( varName);
         outText.append(value.toString());
     }
 

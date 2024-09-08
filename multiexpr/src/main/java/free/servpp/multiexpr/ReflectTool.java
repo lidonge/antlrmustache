@@ -10,8 +10,14 @@ import java.util.Map;
  * @author lidong@date 2024-07-30@version 1.0
  */
 public class ReflectTool {
+    public static boolean DEBUG = true;
     public static Object getQualifiedOrSimpleValue(List<Object> parents, Object currentObj, String varName) {
-        return getVarValue(parents, currentObj, varName);
+        Object ret = getVarValue(parents, currentObj, varName);
+        if(DEBUG){
+            if(ret != getVarValue(null,currentObj,varName))
+                System.err.println("====look up in parent: " + varName + ", parent is " +parents);
+        }
+        return ret;
     }
 
     private static Object getVarValue(List<Object> parents, Object currentObj, String varName) {

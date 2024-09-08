@@ -17,6 +17,8 @@ public interface IEvaluatorEnvironment {
     String OBJ_GET_CUR_VAR = "obj_getCurVar";
     String OBJ_PARENTS = "obj_parents";
     String OBJ_CURRENT_OBJ = "obj_currentObj";
+    String OBJ_GET_CUR_OBJ = "obj_getCurObj";
+    String OBJ_GET_PAR_OBJ = "obj_getParObj";
     String OBJ_NEW_LIST = "obj_newList";
     String OBJ_ADD_To_LIST = "obj_addToList";
     String OBJ_NEW_MAP = "obj_newMap";
@@ -25,10 +27,20 @@ public interface IEvaluatorEnvironment {
     default void addDefault(){
         addFunction(STRING_SUB, args -> ((String) args[0]).substring((int) args[1], (int) args[2]));
         addFunction(STRING_INDEX_OF, args -> ((String) args[0]).indexOf((String) args[1]));
+        addFunction(OBJ_GET_CUR_OBJ, args -> {
+            return getVar(OBJ_CURRENT_OBJ);
+        });
+        addFunction(OBJ_GET_PAR_OBJ, args -> {
+            List<Object> parents = (List<Object>) getVar(OBJ_PARENTS);
+            return parents.size() == 0 ? getVar(OBJ_CURRENT_OBJ) : parents.get(parents.size() -1);
+        });
         addFunction(OBJ_GET_VAR, args -> {
             List<Object> parents = (List<Object>) getVar(OBJ_PARENTS);
             Object currentObj = getVar(OBJ_CURRENT_OBJ);
-            return ReflectTool.getQualifiedOrSimpleValue(parents, currentObj, (String) args[0]);
+            ReflectTool.DEBUG = false;
+            Object ret = ReflectTool.getQualifiedOrSimpleValue(parents, currentObj, (String) args[0]);
+            ReflectTool.DEBUG = true;
+            return ret;
         });
         addFunction(OBJ_GET_CUR_VAR, args -> {
             Object currentObj = getVar(OBJ_CURRENT_OBJ);
