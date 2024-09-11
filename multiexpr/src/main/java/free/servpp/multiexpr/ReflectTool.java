@@ -10,7 +10,7 @@ import java.util.Map;
  * @author lidong@date 2024-07-30@version 1.0
  */
 public class ReflectTool {
-    public static boolean DEBUG = true;
+    public static boolean DEBUG = false;
     public static Object getQualifiedOrSimpleValue(List<Object> parents, Object currentObj, String varName) {
         Object ret = getVarValue(parents, currentObj, varName);
         if(DEBUG){

@@ -37,9 +37,9 @@ public interface IEvaluatorEnvironment {
         addFunction(OBJ_GET_VAR, args -> {
             List<Object> parents = (List<Object>) getVar(OBJ_PARENTS);
             Object currentObj = getVar(OBJ_CURRENT_OBJ);
-            ReflectTool.DEBUG = false;
+//            ReflectTool.DEBUG = false;
             Object ret = ReflectTool.getQualifiedOrSimpleValue(parents, currentObj, (String) args[0]);
-            ReflectTool.DEBUG = true;
+//            ReflectTool.DEBUG = true;
             return ret;
         });
         addFunction(OBJ_GET_CUR_VAR, args -> {
@@ -50,12 +50,20 @@ public interface IEvaluatorEnvironment {
         addFunction(OBJ_ADD_To_LIST, args -> {
             return ((List)args[0]).add(new Object(){
                 Object value = args[1];
+                @Override
+                public String toString(){
+                    return value.toString();
+                }
             });
         });
         addFunction(OBJ_NEW_MAP, args -> new HashMap<>());
         addFunction(OBJ_ADD_To_MAP, args -> {
             return ((Map)args[0]).put(args[1], new Object(){
                 Object value = args[2];
+                @Override
+                public String toString(){
+                    return value.toString();
+                }
             });
         });
     }

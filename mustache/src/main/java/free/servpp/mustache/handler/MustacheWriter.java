@@ -343,7 +343,7 @@ public class MustacheWriter {
      */
     private void writeVariable(Variable block, Object currentObj) {
         String varName = block.getVarName();
-        Object value = getQualifiedOrSimpleValue( varName);
+        Object value = "this".equals(varName) ? currentObj:getQualifiedOrSimpleValue( varName);
         outText.append(value.toString());
     }
 
