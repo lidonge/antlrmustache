@@ -66,7 +66,7 @@ public class CodeFormator {
     }
 
     private static boolean isShortenLine(String line) {
-        return !(line.endsWith(";") || line.endsWith("{") || line.endsWith("}") );
+        return !(line.startsWith("//") || line.endsWith(";") || line.endsWith("{") || line.endsWith("}") );
     }
 
 
