@@ -1,7 +1,5 @@
-package free.servpp.mustache;
-
-
 import free.servpp.multiexpr.handler.DefaultEnvironment;
+import free.servpp.mustache.MustacheCompiler;
 import free.servpp.mustache.handler.*;
 import free.servpp.mustache.model.BaseSection;
 import free.servpp.mustache.model.Template;
@@ -9,7 +7,6 @@ import free.servpp.mustache.model.Template;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
