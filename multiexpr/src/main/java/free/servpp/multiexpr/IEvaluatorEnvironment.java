@@ -25,8 +25,12 @@ public interface IEvaluatorEnvironment {
     String OBJ_ADD_To_MAP = "obj_addToMap";
 
     default void addDefault(){
-        addFunction(STRING_SUB, args -> ((String) args[0]).substring((int) args[1], (int) args[2]));
+        addFunction(STRING_SUB, args -> ((String) args[0]).substring(Integer.parseInt((String) args[1]), Integer.parseInt((String) args[2])));
         addFunction(STRING_INDEX_OF, args -> ((String) args[0]).indexOf((String) args[1]));
+        addFunction("println", args -> {
+            System.out.println(args[0]);
+            return "";
+        });
         addFunction(OBJ_GET_CUR_OBJ, args -> {
             return getVar(OBJ_CURRENT_OBJ);
         });
