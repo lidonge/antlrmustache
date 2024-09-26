@@ -190,7 +190,7 @@ public class MustacheWriter {
 //                    else
                         execWithNewCurrentObject(sectionObj,()->write( sub, BaseSection.SectionType.Normal));
                 }
-                parents.remove(currentObj);
+                parents.remove(parents.size() -1);
             }
         }
     }
